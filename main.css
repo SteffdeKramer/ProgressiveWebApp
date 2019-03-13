@@ -1,0 +1,18 @@
+body {
+    margin: 0;
+    background-color: lightgray
+}
+
+header {
+    background-color: lightblue;
+    text-align: center;
+}
+
+.header_title {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    
+}
