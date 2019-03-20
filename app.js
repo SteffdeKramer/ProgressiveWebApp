@@ -7,8 +7,8 @@ navigator.serviceWorker
 fetch("https://cmgt.hr.nl:8000/api/projects/")
   .then(resp => resp.json()) // Transform the data into json
   .then(function(data) {
-    console.log(data);
 
+    // LocalForage put in indexDB 
     localforage
       .setItem("Projects", data)
       .then(function(value) {
@@ -18,6 +18,7 @@ fetch("https://cmgt.hr.nl:8000/api/projects/")
         console.error(err);
       });
 
+      // For loop to post all data in html 
     for (let i = 0; i < data.projects.length; i++) {
       const element = data.projects[i];
 
@@ -31,6 +32,8 @@ fetch("https://cmgt.hr.nl:8000/api/projects/")
     }
   });
 
+
+// Function to append object to html
 function AppendObject(ProjectTitle, ProjectDescription, ProjectImage) {
   let div = document.createElement("div");
   let title = document.createElement("h2");
