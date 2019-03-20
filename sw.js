@@ -18,8 +18,20 @@ self.addEventListener('install', function(e) {
 });
 
 // Activation
-self.addEventListener('activate',  event => {
-  event.waitUntil(self.clients.claim());
+self.addEventListener('activate', event => {
+  // delete any caches that aren't in expectedCaches
+  // which will get rid of static-v1
+  event.waitUntil(
+    caches.keys().then(keys => Promise.all(
+      keys.map(key => {
+        if (cacheName.includes(key)) {
+          return caches.delete(key);
+        }
+      })
+    )).then(() => {
+      console.log('now ready to handle fetches!');
+    })
+  );
 });
 
 self.addEventListener('fetch', event => {
@@ -29,6 +41,8 @@ self.addEventListener('fetch', event => {
     })
   );
 });
+
+
 
 // Network only
 self.addEventListener('fetch', function(event) {

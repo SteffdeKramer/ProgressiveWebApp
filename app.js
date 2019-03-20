@@ -1,8 +1,9 @@
-nnavigator.serviceWorker
+navigator.serviceWorker
   .register("sw.js")
   .then(reg => console.log("SW registered!", reg))
   .catch(err => console.log("Boo!", err));
 
+// Fetch function get the data!
 fetch("https://cmgt.hr.nl:8000/api/projects/")
   .then(resp => resp.json()) // Transform the data into json
   .then(function(data) {
@@ -15,7 +16,10 @@ fetch("https://cmgt.hr.nl:8000/api/projects/")
       let description = data.projects[i].description;
       let img = "https://cmgt.hr.nl:8000/" + data.projects[i].headerImage;
 
+      let projectID = i;
+
       AppendObject(author, description, img);
+      addToIndexDB(projectID, author, description, img);
     }
   });
 
@@ -39,3 +43,42 @@ function AppendObject(ProjectTitle, ProjectDescription, ProjectImage) {
 
   document.getElementById("projects").appendChild(div);
 }
+
+function addToIndexDB(projectID, author, description, img){
+
+  let data = {
+    Id: String(projectID),
+    Author: String(author),
+    Description: String(description),
+    Img: String(img)
+  };
+
+  localforage.setItem(String(projectID), data).then(function (value) {
+    console.log(value.Author);
+  }).catch(function(err) {
+    console.error(err);
+  });
+
+}
+
+/* 
+Localforage
+*/
+
+// var hexColors = {
+//   red: 'ff0000',
+//   green: '00ff00',
+//   yellow: 'ffff00'
+// };
+
+// localforage.setItem('colors', hexColors).then(function (value) {
+//   console.log(value.red);
+// }).catch(function(err) {
+//   console.error(err);
+// });
+
+// localforage.getItem('colors').then(function (value) {
+//   console.log(value.red); 
+// }).catch(function(err) {
+//   console.error(err);
+// });
