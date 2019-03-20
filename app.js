@@ -28,8 +28,11 @@ fetch("https://cmgt.hr.nl:8000/api/projects/")
     return;
   }
 
-  var dbPromise = idb.open("test-db1", 1);
+  console.log("im running");
+
+  var dbPromise = idb.open("pwa-indexDB", 1);
 })();
+
 
 function AppendObject(ProjectTitle, ProjectDescription, ProjectImage) {
   let div = document.createElement("div");
