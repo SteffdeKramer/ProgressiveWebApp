@@ -1,4 +1,4 @@
-navigator.serviceWorker
+nnavigator.serviceWorker
   .register("sw.js")
   .then(reg => console.log("SW registered!", reg))
   .catch(err => console.log("Boo!", err));
@@ -18,21 +18,6 @@ fetch("https://cmgt.hr.nl:8000/api/projects/")
       AppendObject(author, description, img);
     }
   });
-
-(function() {
-  "use strict";
-
-  //check for support
-  if (!("indexedDB" in window)) {
-    console.log("This browser doesn't support IndexedDB");
-    return;
-  }
-
-  console.log("im running");
-
-  var dbPromise = idb.open("pwa-indexDB", 1);
-})();
-
 
 function AppendObject(ProjectTitle, ProjectDescription, ProjectImage) {
   let div = document.createElement("div");
