@@ -1,8 +1,8 @@
-var cacheName = "PWA_V9";
+var cacheName = "PWA_V45";
 let CACHE_NAME = cacheName;
 let online = navigator.onLine;
 
-var filesToCache = ["app.js", "main.css", "index.html"];
+var filesToCache = ["app.js", "main.css", "index.html", "sw.js"];
 
 // Install
 self.addEventListener("install", function(e) {
@@ -35,23 +35,87 @@ self.addEventListener("activate", function(event) {
   );
 });
 
-self.addEventListener("fetch", function (event) {
-  //To tell browser to evaluate the result of event
-  
-  if (online == true) {
-    console.log("[FETCH]: Is online get from network");
-    event.respondWith(fetch(event.request));
+// Switch case for getting the right strategy
+
+self.addEventListener('fetch', (event) => {
+
+  if(online == false){
+    loadFromCache(event);
+    return
   } else {
-    event.respondWith(
-      caches.match(event.request) //To match current request with cached request it
-      .then(function(response) {
-        //If response found return it, else fetch again.
-        return response || fetch(event.request);
-      })
-      .catch(function(error) {
-        console.error("Error: ", error);
-      })
-    );
-  }
-	
+
+  console.log("you called");
+  console.log(event.request);
+  const destination = event.request.destination;
+  switch (destination) {
+    case 'image': {
+      loadFromNetworkCacheFallback(event);
+      return;
+    }
+    case 'document': {
+      loadFromCacheNetworkFallback(event);
+      return;
+    }
+    case 'script': {
+      loadFromCacheNetworkFallback(event);
+      return;
+    }
+    case 'style': {
+      loadFromCacheNetworkFallback(event);
+      return;
+    }
+    default: {
+      console.log("race started");
+      race(event);
+      return;
+    }
+  }}
 });
+
+function loadFromCache(event) {
+  console.log("[FETCH]: Load from cache");
+  event.respondWith(caches.match(event.request));
+}
+
+function loadFromNetwork(event) {
+  console.log("[FETCH]: Load from network");
+  event.respondWith(fetch(event.request));
+}
+
+function loadFromCacheNetworkFallback(event) {
+  event.respondWith(async function() {
+    console.log("[FETCH]: Load from cache with network fallback");
+    const response = await caches.match(event.request);
+    return response || fetch(event.request);
+  }());
+}
+
+function loadFromNetworkCacheFallback(event) {
+  console.log("[FETCH]: Load from network with cache as fallback");
+  event.respondWith(async function() {
+    try {
+      return await fetch(event.request);
+    } catch (err) {
+      return caches.match(event.request);
+    }
+  }());
+}
+
+function race (event) {
+  promiseRace([
+    caches.match(event.request),
+    fetch(event.request)
+  ])
+}
+
+function promiseRace(promises) {
+  return new Promise((resolve, reject) => {
+    // make sure promises are all promises
+    promises = promises.map(p => Promise.resolve(p));
+    // resolve this promise as soon as one resolves
+    promises.forEach(p => p.then(resolve));
+    // reject if all promises reject
+    promises.reduce((a, b) => a.catch(() => b))
+      .catch(() => reject(Error("All failed")));
+  });
+};

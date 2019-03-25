@@ -51,3 +51,13 @@ function AppendObject(ProjectTitle, ProjectDescription, ProjectImage) {
 
   document.getElementById("projects").appendChild(div);
 }
+
+
+// localforage.getItem('Projects', function (err, data) {
+//   // if err is non-null, we got an error. otherwise, value is the value
+//   console.log(data);
+//   for (let i = 0; i < data.projects.length; i++) {
+//     const element = data.projects[i];
+//     console.log(element);
+//   }
+// });
