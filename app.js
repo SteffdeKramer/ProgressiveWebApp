@@ -3,34 +3,31 @@ navigator.serviceWorker
   .then(reg => console.log("SW registered!", reg))
   .catch(err => console.log("Boo!", err));
 
-// Fetch function get the data!
-fetch("https://cmgt.hr.nl:8000/api/projects/")
+  fetch("https://cmgt.hr.nl:8000/api/projects/")
   .then(resp => resp.json()) // Transform the data into json
   .then(function(data) {
-
+  
     // LocalForage put in indexDB 
     localforage
       .setItem("Projects", data)
       .then(function(value) {
-        console.log(value.Author);
       })
       .catch(function(err) {
         console.error(err);
       });
-
+  
       // For loop to post all data in html 
     for (let i = 0; i < data.projects.length; i++) {
       const element = data.projects[i];
-
+  
       let author = data.projects[i].author;
       let description = data.projects[i].description;
       let img = "https://cmgt.hr.nl:8000/" + data.projects[i].headerImage;
-
+  
       let projectID = i;
-
+  
       AppendObject(author, description, img);
-    }
-  });
+    }});
 
 
 // Function to append object to html
