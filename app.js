@@ -102,9 +102,15 @@ function AppendObject(ProjectTitle, ProjectDescription, ProjectImage) {
 }
 
 if (IamOnline == true) {
+  appendTags();
+} 
 
-}
-
-let appendTags = function () {
+function appendTags() {
   
+  let div = document.createElement("div");
+  let tag  = document.createElement("h2");
+  tag.innerHTML = "tag";
+
+  div.appendChild(tag);
+  document.getElementById("tags").appendChild(div);
 }
