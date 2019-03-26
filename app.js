@@ -1,8 +1,38 @@
-navigator.serviceWorker
-  .register("sw.js")
-  .then(reg => console.log("SW registered!", reg))
-  .catch(err => console.log("Boo!", err));
+let IamOnline = navigator.onLine;
 
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').then(function(reg) {
+  
+      if(reg.installing) {
+        console.log('Service worker installing');
+      } else if(reg.waiting) {
+        console.log('Service worker installed');
+      } else if(reg.active) {
+        console.log('Service worker active');
+      }
+  
+    }).catch(function(error) {
+      // registration failed
+      console.log('Registration failed with ' + error);
+    });
+  }
+
+let AmIConnected = new Promise(function(resolve, reject) {
+  if (IamOnline == true) {
+    resolve("We are online");
+  } else {
+    reject("We are offline");
+  }
+ });
+
+ AmIConnected.then(function(result) {
+  console.log(result); 
+  getFromNetwork();
+}, function(err) {
+  getFromCache();
+});
+
+let getFromNetwork = function() {
   fetch("https://cmgt.hr.nl:8000/api/projects/")
   .then(resp => resp.json()) // Transform the data into json
   .then(function(data) {
@@ -20,14 +50,33 @@ navigator.serviceWorker
     for (let i = 0; i < data.projects.length; i++) {
       const element = data.projects[i];
   
-      let author = data.projects[i].author;
-      let description = data.projects[i].description;
-      let img = "https://cmgt.hr.nl:8000/" + data.projects[i].headerImage;
-  
-      let projectID = i;
+      let author = element.author;
+      let description = element.description;
+      let img = "https://cmgt.hr.nl:8000/" + element.headerImage;
   
       AppendObject(author, description, img);
     }});
+}
+
+let getFromCache = function() {
+
+  localforage.getItem('Projects', function (err, data) {
+    // if err is non-null, we got an error. otherwise, value is the value
+    for (let i = 0; i < data.projects.length; i++) {
+      const element = data.projects[i];
+
+      let author = element.author;
+      let description = element.description;
+
+      let preIMG = String(element.headerImage);
+
+      let img = preIMG.slice(0);
+      img = "assets/" + img;
+
+      AppendObject(author, description, img);
+    }
+  });
+}
 
 
 // Function to append object to html
@@ -52,12 +101,10 @@ function AppendObject(ProjectTitle, ProjectDescription, ProjectImage) {
   document.getElementById("projects").appendChild(div);
 }
 
+if (IamOnline == true) {
 
-// localforage.getItem('Projects', function (err, data) {
-//   // if err is non-null, we got an error. otherwise, value is the value
-//   console.log(data);
-//   for (let i = 0; i < data.projects.length; i++) {
-//     const element = data.projects[i];
-//     console.log(element);
-//   }
-// });
+}
+
+let appendTags = function () {
+  
+}

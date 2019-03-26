@@ -1,8 +1,8 @@
-var cacheName = "PWA_V45";
+var cacheName = "PWA_V4";
 let CACHE_NAME = cacheName;
 let online = navigator.onLine;
 
-var filesToCache = ["app.js", "main.css", "index.html", "sw.js"];
+var filesToCache = ["app.js", "main.css", "index.html", "/"];
 
 // Install
 self.addEventListener("install", function(e) {
@@ -35,87 +35,32 @@ self.addEventListener("activate", function(event) {
   );
 });
 
-// Switch case for getting the right strategy
+self.addEventListener('fetch', function(event) {
+  event.respondWith(
+    caches.match(event.request)
+      .then(function(response) {
+        // Cache hit - return response
+        if (response) {
+          return response;
+        }
+        return fetch(event.request).then(
+          function(response) {
+            // Check if we received a valid response
+            if(!response || response.status !== 200 || response.type !== 'basic') {
+              return response;
+            }
+            var responseToCache = response.clone();
 
-self.addEventListener('fetch', (event) => {
+            caches.open(CACHE_NAME)
+              .then(function(cache) {
+                console.log("clone clone clone");
+                cache.put(event.request, responseToCache);
+              });
 
-  if(online == false){
-    loadFromCache(event);
-    return
-  } else {
-
-  console.log("you called");
-  console.log(event.request);
-  const destination = event.request.destination;
-  switch (destination) {
-    case 'image': {
-      loadFromNetworkCacheFallback(event);
-      return;
-    }
-    case 'document': {
-      loadFromCacheNetworkFallback(event);
-      return;
-    }
-    case 'script': {
-      loadFromCacheNetworkFallback(event);
-      return;
-    }
-    case 'style': {
-      loadFromCacheNetworkFallback(event);
-      return;
-    }
-    default: {
-      console.log("race started");
-      race(event);
-      return;
-    }
-  }}
+            return response;
+          }
+        );
+      })
+    );
 });
 
-function loadFromCache(event) {
-  console.log("[FETCH]: Load from cache");
-  event.respondWith(caches.match(event.request));
-}
-
-function loadFromNetwork(event) {
-  console.log("[FETCH]: Load from network");
-  event.respondWith(fetch(event.request));
-}
-
-function loadFromCacheNetworkFallback(event) {
-  event.respondWith(async function() {
-    console.log("[FETCH]: Load from cache with network fallback");
-    const response = await caches.match(event.request);
-    return response || fetch(event.request);
-  }());
-}
-
-function loadFromNetworkCacheFallback(event) {
-  console.log("[FETCH]: Load from network with cache as fallback");
-  event.respondWith(async function() {
-    try {
-      return await fetch(event.request);
-    } catch (err) {
-      return caches.match(event.request);
-    }
-  }());
-}
-
-function race (event) {
-  promiseRace([
-    caches.match(event.request),
-    fetch(event.request)
-  ])
-}
-
-function promiseRace(promises) {
-  return new Promise((resolve, reject) => {
-    // make sure promises are all promises
-    promises = promises.map(p => Promise.resolve(p));
-    // resolve this promise as soon as one resolves
-    promises.forEach(p => p.then(resolve));
-    // reject if all promises reject
-    promises.reduce((a, b) => a.catch(() => b))
-      .catch(() => reject(Error("All failed")));
-  });
-};
